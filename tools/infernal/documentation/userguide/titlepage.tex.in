@@ -1,0 +1,28 @@
+\begin{titlepage}
+{\Large
+
+\vspace*{\fill}
+
+\noindent
+{\Huge {INFERNAL User's Guide}} \vspace{-8.0pt} \\ 
+\rule[2pt]{\textwidth}{1pt} \\
+\hspace*{\fill} {\large {Sequence analysis using profiles of RNA
+sequence and secondary structure consensus} \\ }
+
+\vspace*{\fill}
+
+\begin{center}
+\url{http://eddylab.org/infernal}\\
+Version @INFERNAL_VERSION@; @INFERNAL_DATE@ \\ 
+
+\vspace*{\fill}
+
+Eric Nawrocki and Sean Eddy\\
+for the INFERNAL development team\\
+\url{github.com/EddyRivasLab/infernal/}
+\end{center}
+
+\vspace*{\fill}
+
+}
+\end{titlepage}
