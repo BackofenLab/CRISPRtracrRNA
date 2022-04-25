@@ -6,6 +6,7 @@ CRISPRArray = namedtuple('CRISPRArray', ["start",
                                          "end",
                                          "consensus",
                                          "strand",
+                                         "score",
                                          "category"])
 
 
@@ -26,9 +27,10 @@ class CRISPRIdentifySummaryParser:
             end = int(line_elements[5])
             consensus = line_elements[7]
             strand = line_elements[11]
+            score = float(line_elements[13])
             category = line_elements[12]
             if category in ["Bona-fide", "Possible"]:
-                cr_array = CRISPRArray(start, end, consensus, strand, category)
+                cr_array = CRISPRArray(start, end, consensus, strand, score, category)
                 if acc_number in self.dict_array_info:
                     self.dict_array_info[acc_number].append(cr_array)
                 else:

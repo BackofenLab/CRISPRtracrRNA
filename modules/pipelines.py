@@ -117,6 +117,7 @@ class CompleteTracrSearch:
                 header = ",".join(["accession_number",
                                    "crispr_array_index",
                                    "crispr_array_category",
+                                   "crispr_array_score",
                                    "crispr_array_start",
                                    "crispr_array_end",
                                    "crispr_array_repeat_consensus",
@@ -128,6 +129,9 @@ class CompleteTracrSearch:
                                    "anti_repeat_direction",
                                    "anti_repeat_relative_location",
                                    "anti_repeat_distance_from_crispr_array",
+                                   "anti_repeat_similarity",
+                                   "anti_repeat_coverage",
+                                   "anti_repeat_similarity_coverage_multiplication",
                                    "anti_repeat_upstream",
                                    "tracr_rna_taken_flag",
                                    "tracr_rna_tail_sequence",
@@ -158,6 +162,7 @@ class CompleteTracrSearch:
                         accession_number = acc_num
                         crispr_array_index = crispr_array_index
                         crispr_array_category = crispr_array_info.category
+                        crispr_array_score = crispr_array_info.score
                         crispr_array_start = crispr_array_info.start
                         crispr_array_end = crispr_array_info.end
                         crispr_array_repeat_consensus = anti_repeat_candidate.crispr_array_consensus_repeat
@@ -174,6 +179,9 @@ class CompleteTracrSearch:
                         anti_repeat_direction = anti_repeat_candidate.anti_repeat_strand
                         anti_repeat_relative_location = anti_repeat_candidate.anti_repeat_relative_location
                         anti_repeat_distance_from_crispr_array = anti_repeat_candidate.anti_repeat_distance_from_crispr_array
+                        anti_repeat_similarity = anti_repeat_candidate.fasta_similarity
+                        anti_repeat_coverage = anti_repeat_candidate.fasta_coverage
+                        anti_repeat_similarity_coverage_multiplication = anti_repeat_similarity * anti_repeat_coverage
                         anti_repeat_upstream = tracr_candidate.anti_repeat_upstream
                         tracr_rna_tail_sequence = tracr_candidate.downstream_region
                         tracr_rna_global_window_sequence = anti_repeat_upstream + anti_repeat_sequence + tracr_rna_tail_sequence
@@ -190,6 +198,7 @@ class CompleteTracrSearch:
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
                                                                    crispr_array_category,
+                                                                   crispr_array_score,
                                                                    crispr_array_start,
                                                                    crispr_array_end,
                                                                    crispr_array_repeat_consensus,
@@ -201,6 +210,9 @@ class CompleteTracrSearch:
                                                                    anti_repeat_direction,
                                                                    anti_repeat_relative_location,
                                                                    anti_repeat_distance_from_crispr_array,
+                                                                   anti_repeat_similarity,
+                                                                   anti_repeat_coverage,
+                                                                   anti_repeat_similarity_coverage_multiplication,
                                                                    anti_repeat_upstream,
                                                                    tracr_rna_flag_taken,
                                                                    tracr_rna_tail_sequence,
@@ -352,6 +364,7 @@ class CompleteTracrSearchWithModel:
                 header = ",".join(["accession_number",
                                    "crispr_array_index",
                                    "crispr_array_category",
+                                   "crispr_array_score",
                                    "crispr_array_start",
                                    "crispr_array_end",
                                    "crispr_array_repeat_consensus",
@@ -363,6 +376,9 @@ class CompleteTracrSearchWithModel:
                                    "anti_repeat_direction",
                                    "anti_repeat_relative_location",
                                    "anti_repeat_distance_from_crispr_array",
+                                   "anti_repeat_similarity",
+                                   "anti_repeat_coverage",
+                                   "anti_repeat_similarity_coverage_multiplication",
                                    "anti_repeat_upstream",
                                    "tracr_rna_taken_flag",
                                    "tracr_rna_tail_sequence",
@@ -396,6 +412,7 @@ class CompleteTracrSearchWithModel:
                         accession_number = acc_num
                         crispr_array_index = crispr_array_index
                         crispr_array_category = crispr_array_info.category
+                        crispr_array_score = crispr_array_info.score
                         crispr_array_start = crispr_array_info.start
                         crispr_array_end = crispr_array_info.end
                         crispr_array_repeat_consensus = anti_repeat_candidate.crispr_array_consensus_repeat
@@ -411,6 +428,9 @@ class CompleteTracrSearchWithModel:
                         anti_repeat_end = anti_repeat_candidate.anti_repeat_end
                         anti_repeat_direction = anti_repeat_candidate.anti_repeat_strand
                         anti_repeat_relative_location = anti_repeat_candidate.anti_repeat_relative_location
+                        anti_repeat_similarity = anti_repeat_candidate.fasta_similarity
+                        anti_repeat_coverage = anti_repeat_candidate.fasta_coverage
+                        anti_repeat_similarity_coverage_multiplication = anti_repeat_similarity * anti_repeat_coverage
                         anti_repeat_distance_from_crispr_array = anti_repeat_candidate.anti_repeat_distance_from_crispr_array
                         anti_repeat_upstream = tracr_candidate.anti_repeat_upstream
                         tracr_rna_tail_sequence = tracr_candidate.downstream_region
@@ -436,6 +456,7 @@ class CompleteTracrSearchWithModel:
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
                                                                    crispr_array_category,
+                                                                   crispr_array_score,
                                                                    crispr_array_start,
                                                                    crispr_array_end,
                                                                    crispr_array_repeat_consensus,
@@ -447,6 +468,9 @@ class CompleteTracrSearchWithModel:
                                                                    anti_repeat_direction,
                                                                    anti_repeat_relative_location,
                                                                    anti_repeat_distance_from_crispr_array,
+                                                                   anti_repeat_similarity,
+                                                                   anti_repeat_coverage,
+                                                                   anti_repeat_similarity_coverage_multiplication,
                                                                    anti_repeat_upstream,
                                                                    tracr_rna_flag_taken,
                                                                    tracr_rna_tail_sequence,
