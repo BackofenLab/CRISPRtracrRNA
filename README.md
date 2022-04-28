@@ -69,7 +69,7 @@ Due to GitHub's file size constraints, authors made their HMM and ML models avai
 
 ### Activation of the environment
 
-Before running CRISPRidentify you need to activate the corresponding environment.
+Before running CRISPRtracrRNA you need to activate the corresponding environment.
 
 ```
 conda activate crispr_tracr_rna_env
