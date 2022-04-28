@@ -8,6 +8,7 @@ from modules.intarna_run import IntarnaRun
 from modules.complete_terminator_search import TerminatorCompleteSearch
 from modules.hmm_model_run import CMScanOnCandidates
 from modules.general_helpers import reverse_com
+from modules.consistency_score_maker import consistency_score_maker
 
 
 class CompleteTracrSearch:
@@ -144,7 +145,9 @@ class CompleteTracrSearch:
                                    "terminator_all_locations",
                                    "terminator_all_scores",
                                    "best_terminator_location",
-                                   "best_terminator_score"])
+                                   "best_terminator_score",
+                                   "terminator_presence_flag"])
+
                 f.write(f"{header}\n")
 
                 for way_index in range(4):
@@ -194,6 +197,7 @@ class CompleteTracrSearch:
                         terminator_all_scores = str(terminator_results[1][tracr_index]).replace(",", "-")
                         best_terminator_location = str(terminator_results[2][tracr_index]).replace(",", "-")
                         best_terminator_score = str(terminator_results[3][tracr_index]).replace(",", "-")
+                        terminator_presence_flag = 1 if terminator_results[0][tracr_index] != "NA" else 0
 
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
@@ -225,7 +229,8 @@ class CompleteTracrSearch:
                                                                    terminator_all_locations,
                                                                    terminator_all_scores,
                                                                    best_terminator_location,
-                                                                   best_terminator_score]])
+                                                                   best_terminator_score,
+                                                                   terminator_presence_flag]])
 
                         f.write(f"{complete_line}\n")
 
@@ -392,8 +397,10 @@ class CompleteTracrSearchWithModel:
                                    "terminator_all_scores",
                                    "best_terminator_location",
                                    "best_terminator_score",
+                                   "terminator_presence_flag",
                                    "tail_model_hit_location",
-                                   "tail_model_hit_score"])
+                                   "tail_model_hit_score",
+                                   "tail_presence_flag"])
 
                 f.write(f"{header}\n")
 
@@ -445,6 +452,8 @@ class CompleteTracrSearchWithModel:
                         best_terminator_location = str(terminator_results[2][tracr_index]).replace(",", "-")
                         best_terminator_score = str(terminator_results[3][tracr_index]).replace(",", "-")
 
+                        terminator_presence_flag = 1 if terminator_results[0][tracr_index] != "NA" else 0
+
                         scan_result = all_scan_results[tracr_index]
                         if scan_result:
                             scan_interval = f"{scan_result.Start}_{scan_result.End}"
@@ -452,6 +461,8 @@ class CompleteTracrSearchWithModel:
                         else:
                             scan_interval = "NA"
                             scan_score = "NA"
+
+                        tail_presence_flag = 1 if scan_result else 0
 
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
@@ -484,8 +495,10 @@ class CompleteTracrSearchWithModel:
                                                                    terminator_all_scores,
                                                                    best_terminator_location,
                                                                    best_terminator_score,
+                                                                   terminator_presence_flag,
                                                                    scan_interval,
-                                                                   scan_score]])
+                                                                   scan_score,
+                                                                   tail_presence_flag]])
 
                         f.write(f"{complete_line}\n")
 
@@ -504,3 +517,7 @@ class CompleteTracrSearchWithModel:
             f.write(header)
             for line in final_content:
                 f.write(line)
+
+        print("\n\t\tAdding consistency scores to the final summary file")
+        consistency_score_maker(self.output_file_name, ",", self.output_file_name)
+
