@@ -279,6 +279,7 @@ class CompleteTracrSearchWithModel:
 
         print("Running CRISPR cas search, it may take a while...")
         dict_all_cas = run_crispr_cas_identifier_on_folder(self.folder_genome)
+        dict_all_cas = {key.split(".")[0]: value for key, value in dict_all_cas.items()}
 
 
         files_folder = [f for f in listdir(self.folder_genome) if isfile(join(self.folder_genome, f))]
@@ -479,14 +480,18 @@ class CompleteTracrSearchWithModel:
 
                         tail_presence_flag = 1 if scan_result else 0
 
+                        print(dict_all_cas)
+                        print(acc_num)
+
                         if acc_num not in dict_all_cas:
                             all_cas_intervals = []
                         else:
                             all_cas_intervals = [key for key, value in dict_all_cas[acc_num].items() if value == "cas9"]
-                        all_cas_intervals = [string_tuple_to_tuple(interval) for interval in all_cas_intervals]
+                        #all_cas_intervals = [string_tuple_to_tuple(interval) for interval in all_cas_intervals]
 
-                        interval_tracr_rna_anti_repeat = (anti_repeat_start, anti_repeat_end)
-                        cas_distance, closest_cas_interval = get_closest_interval(all_cas_intervals, interval_tracr_rna_anti_repeat)
+                        interval_tracr_rna_anti_repeat = (int(anti_repeat_start), int(anti_repeat_end))
+                        cas_distance, closest_cas_interval = get_closest_interval(interval_tracr_rna_anti_repeat, all_cas_intervals)
+                        closest_cas_interval = str(closest_cas_interval).replace(", ", "-")
 
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
