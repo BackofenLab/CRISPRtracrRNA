@@ -9,6 +9,8 @@ from modules.complete_terminator_search import TerminatorCompleteSearch
 from modules.hmm_model_run import CMScanOnCandidates
 from modules.general_helpers import reverse_com
 from modules.consistency_score_maker import consistency_score_maker
+from modules.run_identify_and_identifyer import run_crispr_identify, run_crispr_cas_identifier_on_folder
+from modules.general_helpers import get_closest_interval, string_tuple_to_tuple
 
 
 class CompleteTracrSearch:
@@ -268,9 +270,20 @@ class CompleteTracrSearchWithModel:
         self._pipeline_run()
 
     def _pipeline_run(self):
-        dict_arrays = CRISPRIdentifySummaryParser(self.crispr_identify_summary_file).output()
+        print("Running CRISPR array search, it may take a while...")
+        folder_result_identify = "ResultsIdentify"
+        run_crispr_identify(self.folder_genome, folder_result_identify)
+        crispr_identify_summary_file = join(folder_result_identify, "Complete_summary.csv")
+        dict_arrays = CRISPRIdentifySummaryParser(crispr_identify_summary_file).output()
+
+
+        print("Running CRISPR cas search, it may take a while...")
+        dict_all_cas = run_crispr_cas_identifier_on_folder(self.folder_genome)
+
+
         files_folder = [f for f in listdir(self.folder_genome) if isfile(join(self.folder_genome, f))]
         print(f"\t\tWorking with {len(files_folder)} files \n\n")
+
         for index, file_name in enumerate(files_folder, 1):
             print(f"\t\tWorking with file {index} - {file_name}")
             full_path_genome = join(self.folder_genome, file_name)
@@ -400,13 +413,15 @@ class CompleteTracrSearchWithModel:
                                    "terminator_presence_flag",
                                    "tail_model_hit_location",
                                    "tail_model_hit_score",
-                                   "tail_presence_flag"])
+                                   "tail_presence_flag",
+                                   "closest_corresponding_cas_interval",
+                                   "distance_to_cas"])
 
                 f.write(f"{header}\n")
 
                 for way_index in range(4):
                     array_orientation = "Predicted" if (way_index in [0, 1]) else "Alternative"
-                    tracr_rna_flag_taken = "Correct" if (way_index in [0, 2]) else "Wrong"
+                    tracr_rna_flag_taken = "5'-3'" if (way_index in [0, 2]) else "3'-5'"
                     tracr_candidates = tracr_candidates_all_ways[way_index]
                     intarna_results = intarna_result_all_ways[way_index]
                     terminator_results = terminators_all_ways[way_index]
@@ -464,6 +479,15 @@ class CompleteTracrSearchWithModel:
 
                         tail_presence_flag = 1 if scan_result else 0
 
+                        if acc_num not in dict_all_cas:
+                            all_cas_intervals = []
+                        else:
+                            all_cas_intervals = [key for key, value in dict_all_cas[acc_num].items() if value == "cas9"]
+                        all_cas_intervals = [string_tuple_to_tuple(interval) for interval in all_cas_intervals]
+
+                        interval_tracr_rna_anti_repeat = (anti_repeat_start, anti_repeat_end)
+                        cas_distance, closest_cas_interval = get_closest_interval(all_cas_intervals, interval_tracr_rna_anti_repeat)
+
                         complete_line = ",".join([str(x) for x in [accession_number,
                                                                    crispr_array_index,
                                                                    crispr_array_category,
@@ -498,7 +522,9 @@ class CompleteTracrSearchWithModel:
                                                                    terminator_presence_flag,
                                                                    scan_interval,
                                                                    scan_score,
-                                                                   tail_presence_flag]])
+                                                                   tail_presence_flag,
+                                                                   closest_cas_interval,
+                                                                   cas_distance]])
 
                         f.write(f"{complete_line}\n")
 

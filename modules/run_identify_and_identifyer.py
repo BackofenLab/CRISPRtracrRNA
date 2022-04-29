@@ -3,25 +3,40 @@ import subprocess
 from os import listdir
 from os.path import isfile, join
 import shutil
+import pathlib
 
 
-def run_crispr_identify(folder_path, result_folder_path):
+def run_crispr_identify(folder_input_path, result_folder_path_path):
     """
-    Runs the CRISPR identify on the given folder.
+    Runs the CRISPRidentify on the given folder.
     """
 
-    cmd = f"tools/CRISPRcasIdentifier/CRISPRcasIdentifier/crispr_identify.py --input_folder {folder_path} --result_folder {result_folder_path} --fast_run True"
+    cur_path = str(pathlib.Path().absolute())
+    identify_path = os.path.join(cur_path, "tools/CRISPRidentify/CRISPRidentify/")
+
+    folder_input_abs_path = os.path.abspath(folder_input_path)
+    folder_result_abs_path = os.path.abspath(result_folder_path_path)
+
+    os.chdir(identify_path)
+    cmd = f"python CRISPRidentify.py --input_folder {folder_input_abs_path} --result_folder {folder_result_abs_path} --fast_run True"
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    process.communicate()
+    a, b = process.communicate()
+    os.chdir(cur_path)
 
-def run_crispr_cas_identifier(folder_path, result_folder_path):
-    """
-    Runs the CRISPR cas identifyer on the given folder.
-    """
 
-    cmd = f"tools/CRISPRidentify/CRISPRidentify.py --input_folder {folder_path} --result_folder {result_folder_path} --fast_run True"
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    process.communicate()
+def run_crispr_cas_identifier_on_folder(folder_input_path):
+    """
+    Runs the CRISPRcasIdentifier on the given folder.
+    """
+    dict_all_cas_results = {}
+    files_in_folder = [f for f in listdir(folder_input_path) if isfile(join(folder_input_path, f))]
+    for file_name in files_in_folder:
+        file_name_base = os.path.basename(file_name)
+        full_file_path = os.path.join(folder_input_path, file_name)
+        dict_cas = complete_info_with_cas_identifier(full_file_path)
+        dict_all_cas_results[file_name_base] = dict_cas
+
+    return dict_all_cas_results
 
 
 #          Components cas genes
@@ -75,8 +90,10 @@ def run_cas_identifier(file_name):
         pass
 
     command = f"python tools/CRISPRcasIdentifier/CRISPRcasIdentifier/CRISPRcasIdentifier.py -f {file_name} -ho output_cas/hmmsearch -st dna -co output_cas/cassette"
+    #print(command)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     a, b = process.communicate()
+    #print(a, b)
 
 
 def complete_info_with_cas_identifier(file_name):

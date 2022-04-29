@@ -1,6 +1,3 @@
-
-
-
 def candidate_by_acc_number_ranking(candidate_csv_file, separator, dict_weights):
     with open(candidate_csv_file, 'r') as csv_file:
         lines = csv_file.readlines()
@@ -22,10 +19,9 @@ def candidate_ranking(candidate_csv_file, separator, dict_weights, candidate_ran
 
     with open(candidate_ranking_file, 'w') as csv_file:
         new_header = header.strip() + separator + 'score'
-        csv_file.write(header)
+        csv_file.write(new_header)
         for line, score in pairs_line_score:
             csv_file.write(line)
-
 
 
 def score_line(line, dict_weights, dict_indexes, separator):

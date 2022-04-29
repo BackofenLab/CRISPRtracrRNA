@@ -52,7 +52,7 @@ dependencies:
   - icu=58.2=hf484d3e_1000
   - idna=2.10=pyh9f0ad1d_0
   - importlib-metadata=2.0.0=py_1
-  - intarna=1.2.5=2
+  - intarna=2.3.1
   - joblib=0.14.1=pyh9f0ad1d_0
   - jpeg=9d=h516909a_0
   - keras=2.4.3=0
@@ -153,4 +153,3 @@ dependencies:
   - zipp=3.4.0=pyhd3eb1b0_0
   - zlib=1.2.11=h516909a_1007
   - zstd=1.4.9=haebb681_0
-prefix: /home/alex/miniconda3/envs/crispr_tracr_rna_env
