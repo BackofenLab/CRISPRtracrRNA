@@ -18,10 +18,10 @@ def candidate_ranking(candidate_csv_file, separator, dict_weights, candidate_ran
         pairs_line_score.sort(key=lambda x: x[1], reverse=True)
 
     with open(candidate_ranking_file, 'w') as csv_file:
-        new_header = header.strip() + separator + 'score'
+        new_header = header.strip() + separator + 'score' + '\n'
         csv_file.write(new_header)
         for line, score in pairs_line_score:
-            csv_file.write(line)
+            csv_file.write(line + separator + str(score) + '\n')
 
 
 def score_line(line, dict_weights, dict_indexes, separator):
