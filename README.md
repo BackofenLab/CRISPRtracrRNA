@@ -82,7 +82,7 @@ We prepared the test folder which can be used for the test run.
 Example of running CRISPRtracrRNA over a folder of files:
 
 ```
-python CRISPRidentify.py --input_folder TestInput
+python CRISPRidentify.py --input_folder test_input_complete
 ```
 
 ### Flags
@@ -115,7 +115,7 @@ Specifies the path and name of the folder with the output results. If not specif
 For example:
 Specifies the path and name of the folder with the output results.
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --output_folder CRISPRtracrRNA_output
+python CRISPRtracrRNA.py --input_folder test_input_complete --output_folder CRISPRtracrRNA_output
 ```
 
 ##### Temp folder
@@ -125,7 +125,7 @@ python CRISPRtracrRNA.py --input_folder TestInput --output_folder CRISPRtracrRNA
 Specifies the path and name of the folder with the intermediate results. If not specified the results will appear in "temp" folder
 
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --temp_folder_path temp
+python CRISPRtracrRNA.py --input_folder test_input_complete --temp_folder_path temp
 ```
 
 ##### Run type
@@ -135,9 +135,12 @@ python CRISPRtracrRNA.py --input_folder TestInput --temp_folder_path temp
 Specifies the way CRISPRtracrRNA will be executed. The following options are available: "complete_run" and "model_run"
 
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --run_type complete_run
+python CRISPRtracrRNA.py --input_folder test_input_complete --run_type complete_run
 ```
 
+```
+python CRISPRtracrRNA.py --input_folder test_input_model_only --run_type model_run
+```
 
 ##### Model type
 
@@ -146,7 +149,7 @@ python CRISPRtracrRNA.py --input_folder TestInput --run_type complete_run
 Specifies the type of pretrained model. The following options are available: "II" and "V"
 
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --model_type II
+python CRISPRtracrRNA.py --input_folder test_input_complete --model_type II
 ```
 
 ##### Anti-repeat similarity threshold
@@ -156,7 +159,7 @@ python CRISPRtracrRNA.py --input_folder TestInput --model_type II
 Specifies the threshold for the similarity between anti-repeat and repeat. The default value is 0.7.
 
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --anti_repeat_similarity_threshold 0.7
+python CRISPRtracrRNA.py --input_folder test_input_complete --anti_repeat_similarity_threshold 0.7
 ```
 
 ##### Anti-repeat coverage threshold
@@ -166,7 +169,7 @@ python CRISPRtracrRNA.py --input_folder TestInput --anti_repeat_similarity_thres
 Specifies the threshold for the coverage of anti-repeat. The default value is 0.6.
 
 ```
-python CRISPRtracrRNA.py --input_folder TestInput --anti_repeat_coverage_threshold 0.6
+python CRISPRtracrRNA.py --input_folder test_input_complete --anti_repeat_coverage_threshold 0.6
 ```
 
 ##### Ranking weights
