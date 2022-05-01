@@ -21,21 +21,24 @@ def candidate_ranking(candidate_csv_file, separator, dict_weights, candidate_ran
         new_header = header.strip() + separator + 'score' + '\n'
         csv_file.write(new_header)
         for line, score in pairs_line_score:
-            csv_file.write(line + separator + str(score) + '\n')
+            csv_file.write(line.strip() + separator + str(score) + '\n')
 
 
 def score_line(line, dict_weights, dict_indexes, separator):
     line_elements = line.strip().split(separator)
     score = 0
     for key in dict_weights:
-        score += float(line_elements[dict_indexes[key]]) * dict_weights[key]
+        try:
+            score += float(line_elements[dict_indexes[key]]) * dict_weights[key]
+        except ValueError:
+            score += 0
     return score
 
 
 def get_column_indexes(header_values, dict_weights):
     dict_indexes = {}
     for key, value in dict_weights.items():
-        dict_indexes[key] = header_values.index(value)
+        dict_indexes[key] = header_values.index(key)
     return dict_indexes
 
 

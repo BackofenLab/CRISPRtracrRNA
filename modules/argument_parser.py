@@ -11,9 +11,9 @@ def parse_input_arguments():
                         help='output summary file (default: CRISPRtracrRNA_result.csv)')
     parser.add_argument('--temp_folder_path', type=str, default="temp",
                         help='temp folder path (default: temp)')
-    parser.add_argument('--run_type', type=int, default="complete_run",
+    parser.add_argument('--run_type', type=str, default="complete_run",
                         help='run type (default: complete_run )')
-    parser.add_argument('--model_type', type=int, default="II",
+    parser.add_argument('--model_type', type=str, default="II",
                         help='model type (default: II)')
     parser.add_argument('--anti_repeat_similarity_threshold', type=float, default=0.7,
                         help='anti-repeat similarity threshold (default: 0.7)')

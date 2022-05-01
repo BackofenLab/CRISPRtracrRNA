@@ -12,6 +12,8 @@ from modules.consistency_score_maker import consistency_score_maker
 from modules.run_identify_and_identifyer import run_crispr_identify, run_crispr_cas_identifier_on_folder
 from modules.general_helpers import get_closest_interval, string_tuple_to_tuple
 from modules.candidate_ranking import candidate_ranking
+from modules.folder_maker import folder_maker
+from modules.model_run_only import CMScanRunCompleteDNA
 
 
 class CompleteTracrSearchWithModel:
@@ -31,17 +33,18 @@ class CompleteTracrSearchWithModel:
         self._pipeline_run()
 
     def _pipeline_run(self):
+        print("Creating folders if necessary...")
+        folder_maker(self.folder_output, self.temp_folder_path)
+
         print("Running CRISPR array search, it may take a while...")
         folder_result_identify = "ResultsIdentify"
         run_crispr_identify(self.folder_genome, folder_result_identify)
         crispr_identify_summary_file = join(folder_result_identify, "Complete_summary.csv")
         dict_arrays = CRISPRIdentifySummaryParser(crispr_identify_summary_file).output()
 
-
         print("Running CRISPR cas search, it may take a while...")
         dict_all_cas = run_crispr_cas_identifier_on_folder(self.folder_genome)
         dict_all_cas = {key.split(".")[0]: value for key, value in dict_all_cas.items()}
-
 
         files_folder = [f for f in listdir(self.folder_genome) if isfile(join(self.folder_genome, f))]
         print(f"\t\tWorking with {len(files_folder)} files \n\n")
@@ -241,9 +244,6 @@ class CompleteTracrSearchWithModel:
 
                         tail_presence_flag = 1 if scan_result else 0
 
-                        print(dict_all_cas)
-                        print(acc_num)
-
                         if acc_num not in dict_all_cas:
                             all_cas_intervals = []
                         else:
@@ -314,5 +314,39 @@ class CompleteTracrSearchWithModel:
         consistency_score_maker(self.output_file_name, ",", self.output_file_name)
 
         print("\n\t\tRanking the final summary file")
-        candidate_ranking(self.output_file_name, ",", self.output_file_name)
+        candidate_ranking(self.output_file_name, ",", self.dict_weights, self.output_file_name)
 
+
+class TracrSearchWihtModelOnly:
+    def __init__(self, folder_input, folder_output, summary_file_name, path_to_model):
+        self.folder_input = folder_input
+        self.folder_output = folder_output
+        self.summary_file_name = summary_file_name
+        self.path_to_model = path_to_model
+
+        self._run_model_search()
+
+    def _run_model_search(self):
+        folder_maker(self.folder_output, "")
+        print("\n\t\tRunning the model search")
+        all_files = [f for f in listdir(self.folder_input) if isfile(join(self.folder_input, f))]
+        for index, file_name in enumerate(all_files):
+            print(f"\tWorking with file {file_name}  {index+1} out of {len(all_files)}")
+            full_path_to_file = join(self.folder_input, file_name)
+            cm_scan_c_dna = CMScanRunCompleteDNA(full_path_to_file, self.path_to_model,  self.folder_output)
+            cm_scan_c_dna.report_csv_output_file(join(self.folder_output, file_name + "_report.csv"))
+
+
+        lines_report = []
+        files_in_temp_folder = [f for f in listdir(self.folder_output)
+                                if isfile(join(self.folder_output, f))]
+
+        for index, file_name in enumerate(files_in_temp_folder):
+            with open(join(self.folder_output, file_name)) as f:
+                if index == 0:
+                    lines_report = f.readlines()
+                else:
+                    lines_report += f.readlines()[1:]
+
+        with open(self.summary_file_name, "w") as fw:
+            fw.writelines(lines_report)
