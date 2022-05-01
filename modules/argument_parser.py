@@ -5,8 +5,8 @@ def parse_input_arguments():
     parser = argparse.ArgumentParser(description='Run CRISPRtracrRNA ')
     parser.add_argument('--input_folder', type=str, default=None,
                         help='input folder with genomes (default: None)')
-    parser.add_argument('--output_folder', type=str, default=None,
-                        help='output folder (default: None)')
+    parser.add_argument('--output_folder', type=str, default="CRISPRtracrRNA_output",
+                        help='output folder (default: CRISPRtracrRNA_output)')
     parser.add_argument('--output_summary_file', type=str, default="CRISPRtracrRNA_result.csv",
                         help='output summary file (default: CRISPRtracrRNA_result.csv)')
     parser.add_argument('--temp_folder_path', type=str, default="temp",

@@ -74,3 +74,114 @@ Before running CRISPRtracrRNA you need to activate the corresponding environment
 ```
 conda activate crispr_tracr_rna_env
 ```
+
+## Running CRISPRtracrRNA
+
+We prepared the test folder which can be used for the test run.
+
+Example of running CRISPRtracrRNA over a folder of files:
+
+```
+python CRISPRidentify.py --input_folder TestInput
+```
+
+### Flags
+
+You can see the help by using the `-h` option
+
+```
+
+python CRISPRtracrRNA.py -h
+
+```
+
+
+#### Mandatory flags
+The only mandatory parameter which has to be specified is the input folder.
+
+##### Input as a folder of fasta files
+
+* `--input_folder <path_to_the_folder>`
+
+
+#### Optional flags
+
+##### Output
+
+* `--output_folder [paht_to_the_result_folder]`
+
+Specifies the path and name of the folder with the output results. If not specified the results will appear in "CRISPRtracrRNA_output" folder
+
+For example:
+Specifies the path and name of the folder with the output results.
+```
+python CRISPRtracrRNA.py --input_folder TestInput --output_folder CRISPRtracrRNA_output
+```
+
+##### Temp folder
+
+* `--temp_folder_path [paht_to_the_result_folder]`
+
+Specifies the path and name of the folder with the intermediate results. If not specified the results will appear in "temp" folder
+
+```
+python CRISPRtracrRNA.py --input_folder TestInput --temp_folder_path temp
+```
+
+##### Run type
+
+* `--run_type [execution_type]`
+
+Specifies the way CRISPRtracrRNA will be executed. The following options are available: "complete_run" and "model_run"
+
+```
+python CRISPRtracrRNA.py --input_folder TestInput --run_type complete_run
+```
+
+
+##### Model type
+
+* `--model_type [model]`
+
+Specifies the type of pretrained model. The following options are available: "II" and "V"
+
+```
+python CRISPRtracrRNA.py --input_folder TestInput --model_type II
+```
+
+##### Anti-repeat similarity threshold
+
+* `--anti_repeat_similarity_threshold [value]`
+
+Specifies the threshold for the similarity between anti-repeat and repeat. The default value is 0.7.
+
+```
+python CRISPRtracrRNA.py --input_folder TestInput --anti_repeat_similarity_threshold 0.7
+```
+
+##### Anti-repeat coverage threshold
+
+* `--anti_repeat_coverage_threshold [value]`
+
+Specifies the threshold for the coverage of anti-repeat. The default value is 0.6.
+
+```
+python CRISPRtracrRNA.py --input_folder TestInput --anti_repeat_coverage_threshold 0.6
+```
+
+##### Ranking weights
+
+Weights which can be used for the ranking of the results. The default values are:
+
+| Description | Default value |
+|-------------------------------------|-----|
+| weight_crispr_array_score           | 0.5 |
+| weight_anti_repeat_sim              | 0.5 |
+| weight_anti_repeat_coverage         | 0.5 |
+| weight_anti_sim_coverage            | 0.5 |
+| weight_interaction_score            | 0.6 |
+| weight_model_hit_score              | 0.9 |
+| weight_terminator_hit_score         | 0.9 |
+| weight_consistency_orientation      | 0.1 |
+| weight_consistency_anti_repeat_tail | 0.1 |
+| weight_consistency_tail_terminator  | 0.1 |
