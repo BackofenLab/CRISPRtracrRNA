@@ -82,7 +82,7 @@ We prepared the test folder which can be used for the test run.
 Example of running CRISPRtracrRNA over a folder of files:
 
 ```
-python CRISPRidentify.py --input_folder test_input_complete
+python CRISPRtracrRNA.py --input_folder test_input_complete
 ```
 
 ### Flags
