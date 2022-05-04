@@ -108,7 +108,7 @@ The only mandatory parameter which has to be specified is the input folder.
 
 ##### Output
 
-* `--output_folder [paht_to_the_result_folder]`
+* `--output_folder [path_to_the_result_folder]`
 
 Specifies the path and name of the folder with the output results. If not specified the results will appear in "CRISPRtracrRNA_output" folder
 
@@ -120,7 +120,7 @@ python CRISPRtracrRNA.py --input_folder test_input_complete --output_folder CRIS
 
 ##### Temp folder
 
-* `--temp_folder_path [paht_to_the_result_folder]`
+* `--temp_folder_path [path_to_the_result_folder]`
 
 Specifies the path and name of the folder with the intermediate results. If not specified the results will appear in "temp" folder
 
