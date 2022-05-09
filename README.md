@@ -188,3 +188,13 @@ Weights which can be used for the ranking of the results. The default values are
 | weight_consistency_orientation      | 0.1 |
 | weight_consistency_anti_repeat_tail | 0.1 |
 | weight_consistency_tail_terminator  | 0.1 |
+
+
+##### Analysis of type V tracrRNA anti-repeats
+
+* `--perform_type_v_anti_repeat_analysis [value]`
+
+```
+python CRISPRtracrRNA.py --input_folder test_input_model_only_type_v --model_type v --run_type model_run --perform_type_v_anti_repeat_analysis True
+```
+
