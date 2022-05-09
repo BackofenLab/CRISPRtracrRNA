@@ -14,6 +14,7 @@ from modules.general_helpers import get_closest_interval, string_tuple_to_tuple
 from modules.candidate_ranking import candidate_ranking
 from modules.folder_maker import folder_maker
 from modules.model_run_only import CMScanRunCompleteDNA
+from modules.pattern_search import anti_repeat_search_type_v
 
 
 class CompleteTracrSearchWithModel:
@@ -318,11 +319,12 @@ class CompleteTracrSearchWithModel:
 
 
 class TracrSearchWihtModelOnly:
-    def __init__(self, folder_input, folder_output, summary_file_name, path_to_model):
+    def __init__(self, folder_input, folder_output, summary_file_name, path_to_model, flag_perform_anti_repeat_search):
         self.folder_input = folder_input
         self.folder_output = folder_output
         self.summary_file_name = summary_file_name
         self.path_to_model = path_to_model
+        self.flag_perform_anti_repeat_search = flag_perform_anti_repeat_search
 
         self._run_model_search()
 
@@ -350,3 +352,7 @@ class TracrSearchWihtModelOnly:
 
         with open(self.summary_file_name, "w") as fw:
             fw.writelines(lines_report)
+
+        if self.flag_perform_anti_repeat_search:
+            print("\n\t\tPerforming anti-repeat search")
+            anti_repeat_search_type_v(self.summary_file_name, ",", self.summary_file_name)

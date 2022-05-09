@@ -208,17 +208,17 @@ class CMScanRunCompleteDNA:
 
     def report_csv_output_file(self, csv_file_name):
         with open(csv_file_name, "w") as f:
-            header = "\t".join(["acc_num", "start", "end", "hit_sequence", "e_value", "extended_sequence"]) + "\n"
+            header = ",".join(["acc_num", "start", "end", "hit_sequence", "e_value", "extended_sequence"]) + "\n"
             f.write(header)
 
             for interval_seq, e_value in zip(self.merged_intervals_sequences_forward, self.merged_intervals_e_vals_forward):
                 interval, seq, extended_seq = interval_seq
                 start, end = interval
-                line = "\t".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
+                line = ",".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
                 f.write(line)
 
             for interval_seq, e_value in zip(self.merged_intervals_sequences_reversed, self.merged_intervals_e_vals_reversed):
                 interval, seq, extended_seq = interval_seq
                 start, end = interval
-                line = "\t".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
+                line = ",".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
                 f.write(line)

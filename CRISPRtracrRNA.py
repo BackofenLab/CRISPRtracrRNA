@@ -23,6 +23,7 @@ def main():
                     "consistency_terminator_orientation": args.weight_consistency_orientation,
                     "consistency_anti_repeat_tail": args.weight_consistency_anti_repeat_tail,
                     "consistency_tail_terminator": args.weight_consistency_tail_terminator}
+    perform_anti_repeat_search = args.perform_type_v_anti_repeat_analysis
 
     if run_type == "complete_run":
         complete_tracr_search = CompleteTracrSearchWithModel(folder_output=folder_output,
@@ -37,7 +38,8 @@ def main():
         model_tracr_search = TracrSearchWihtModelOnly(folder_input=folder_input,
                                                       folder_output=folder_output,
                                                       summary_file_name=output_file_name,
-                                                      path_to_model=model)
+                                                      path_to_model=model,
+                                                      flag_perform_anti_repeat_search=perform_anti_repeat_search)
 
 
 if __name__ == "__main__":

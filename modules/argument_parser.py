@@ -39,6 +39,9 @@ def parse_input_arguments():
                         help='weight of consistency anti-repeat tail (default: 0.1)')
     parser.add_argument('--weight_consistency_tail_terminator', type=float, default=0.1,
                         help='weight of consistency tail terminator (default: 0.1)')
+    parser.add_argument('--perform_type_v_anti_repeat_analysis', type=bool, default=False,
+                        help='performs the search for the potential anti-repeat locations '
+                             '(only for type V, default: False)')
     args = parser.parse_args()
     return args
 
