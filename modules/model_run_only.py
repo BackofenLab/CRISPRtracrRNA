@@ -2,6 +2,7 @@ import os
 from os.path import join
 import shutil
 from os.path import basename
+from modules.consistency_score_maker import get_header_column_index
 
 
 class CMScanRunCompleteDNA:
@@ -222,3 +223,56 @@ class CMScanRunCompleteDNA:
                 start, end = interval
                 line = ",".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
                 f.write(line)
+
+
+def filter_csv_file_model_run(csv_file_name, output_file_name, e_value_threshold, hit_length_threshold):
+    with open(csv_file_name, "r") as f:
+        lines = f.readlines()
+        header = lines[0]
+        index_acc_num = get_header_column_index(header, ",", "acc_num")
+        index_start = get_header_column_index(header, ",", "start")
+        index_end = get_header_column_index(header, ",", "end")
+        index_hit_sequence = get_header_column_index(header, ",", "hit_sequence")
+        index_e_value = get_header_column_index(header, ",", "e_value")
+        lines = lines[1:]
+        dict_lines = {}
+        filtered_lines = []
+        for line in lines:
+            line = line.strip()
+            line_elements = line.split(",")
+            acc_num = line_elements[index_acc_num]
+            start = line_elements[index_start]
+            end = line_elements[index_end]
+            hit_sequence = line_elements[index_hit_sequence]
+            e_value = float(line_elements[index_e_value])
+
+            if e_value > e_value_threshold:
+                filtered_lines.append(line)
+                continue
+            if len(hit_sequence) < hit_length_threshold:
+                filtered_lines.append(line)
+                continue
+
+            if acc_num not in dict_lines:
+                dict_lines[acc_num] = {(start, end): (e_value, line)}
+            else:
+                if (start, end) not in dict_lines[acc_num]:
+                    dict_lines[acc_num][(start, end)] = (e_value, line)
+                else:
+                    if e_value < dict_lines[acc_num][(start, end)][0]:
+                        filtered_lines.append(dict_lines[acc_num][(start, end)][1])
+                        dict_lines[acc_num][(start, end)] = (e_value, line)
+                    else:
+                        filtered_lines.append(line)
+
+    with open(output_file_name, "w") as f:
+        f.write(header)
+        for acc_num in dict_lines:
+            for interval in dict_lines[acc_num]:
+                f.write(dict_lines[acc_num][interval][1])
+                f.write("\n")
+        f.write("\n\n Filtered out candidates (duplicates; short hits; high e-value): \n")
+        for line in filtered_lines:
+            f.write(line)
+            f.write("\n")
+

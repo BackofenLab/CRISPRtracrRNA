@@ -15,6 +15,7 @@ from modules.candidate_ranking import candidate_ranking
 from modules.folder_maker import folder_maker
 from modules.model_run_only import CMScanRunCompleteDNA
 from modules.pattern_search import anti_repeat_search_type_v
+from modules.model_run_only import filter_csv_file_model_run
 
 
 class CompleteTracrSearchWithModel:
@@ -356,3 +357,5 @@ class TracrSearchWihtModelOnly:
         if self.flag_perform_anti_repeat_search:
             print("\n\t\tPerforming anti-repeat search")
             anti_repeat_search_type_v(self.summary_file_name, ",", self.summary_file_name)
+
+        filter_csv_file_model_run(self.summary_file_name, self.summary_file_name, 0.0001, 30)
