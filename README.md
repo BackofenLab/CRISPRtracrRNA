@@ -31,7 +31,11 @@ Then you have to create the CRISPRtracrRNA. The necessary setup is provided in t
 In order to install the corresponding environment one can execute the following command from the "for_environment" directory
 
 ```
-conda env create -f environment.yml
+conda -n base update conda
+
+conda install -c conda-forge mamba
+
+mamba env create -f environment.yml
 ```
 
 ### Additional preparations
