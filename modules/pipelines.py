@@ -249,7 +249,7 @@ class CompleteTracrSearchWithModel:
                         if acc_num not in dict_all_cas:
                             all_cas_intervals = []
                         else:
-                            all_cas_intervals = [key for key, value in dict_all_cas[acc_num].items() if value == "cas9"]
+                            all_cas_intervals = [key for key, value in dict_all_cas[acc_num].items() if value == "cas9" or value == "cas12"]
                         #all_cas_intervals = [string_tuple_to_tuple(interval) for interval in all_cas_intervals]
 
                         interval_tracr_rna_anti_repeat = (int(anti_repeat_start), int(anti_repeat_end))
