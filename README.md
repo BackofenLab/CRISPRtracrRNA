@@ -66,6 +66,7 @@ tools/CRISPRcasIdentifier/CRISPRcasIdentifier/CRISPRcasIdentifier.py
 Secondly, you need to download the models:
 
 Due to GitHub's file size constraints, authors made their HMM and ML models available in Google Drive. You can download them [here](https://drive.google.com/file/d/1YbTxkn9KuJP2D7U1-6kL1Yimu_4RqSl1/view?usp=sharing) and [here](https://drive.google.com/file/d/1Nc5o6QVB6QxMxpQjmLQcbwQwkRLk-thM/view?usp=sharing). Save both tar.gz files inside CRISPRcasIdentifier's directory.
+Note: If you experience problems with the cas detection, try to manually extract the tar.gz files.
 
 Additionally, you need to give permissions to the erpin tool:
 ```
