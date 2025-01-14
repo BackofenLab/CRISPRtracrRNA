@@ -28,7 +28,7 @@ bash Miniconda3-latest-Linux-x86_64.sh
 
 Then you have to create the CRISPRtracrRNA. The necessary setup is provided in the "environment.yml" file
 
-In order to install the corresponding environment one can execute the following command from the "for_environment" directory
+In order to install the corresponding environment one can execute the following command
 
 ```
 conda env create -f environment.yml
