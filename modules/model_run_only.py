@@ -53,7 +53,7 @@ class CMScanRunCompleteDNA:
         self.dna = "".join(line.strip() for line in lines[1:])
 
     def _run_cm_scan(self):
-        cmd = f"tools/infernal/binaries/cmscan -o output_cmscan.txt {self.model_path} {self.dna_path}"
+        cmd = f"cmscan -o output_cmscan.txt {self.model_path} {self.dna_path}"
         os.system(cmd)
 
     def _parse_result_file(self):
