@@ -26,16 +26,12 @@ Then Miniconda should be installed. On a linux machine the command is similar to
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-Then you have to create the CRISPRtracrRNA. The necessary setup is provided in the "environment.yml" file inside the "for_environment" directory
+Then you have to create the CRISPRtracrRNA. The necessary setup is provided in the "environment.yml" file
 
 In order to install the corresponding environment one can execute the following command from the "for_environment" directory
 
 ```
-conda -n base update conda
-
-conda install -c conda-forge mamba
-
-mamba env create -f environment.yml
+conda env create -f environment.yml
 ```
 
 ### Additional preparations
@@ -70,6 +66,11 @@ tools/CRISPRcasIdentifier/CRISPRcasIdentifier/CRISPRcasIdentifier.py
 Secondly, you need to download the models:
 
 Due to GitHub's file size constraints, authors made their HMM and ML models available in Google Drive. You can download them [here](https://drive.google.com/file/d/1YbTxkn9KuJP2D7U1-6kL1Yimu_4RqSl1/view?usp=sharing) and [here](https://drive.google.com/file/d/1Nc5o6QVB6QxMxpQjmLQcbwQwkRLk-thM/view?usp=sharing). Save both tar.gz files inside CRISPRcasIdentifier's directory.
+
+Additionally, you need to give permissions to the erpin tool:
+```
+sudo chmod 777 tools/erpin/erpin
+```
 
 ### Activation of the environment
 
