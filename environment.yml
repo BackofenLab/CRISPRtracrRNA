@@ -3,8 +3,6 @@ channels:
   - conda-forge
   - bioconda
   - nodefaults
-  - biobuilds
-  - r
 dependencies:
   - python==3.7.6
   - python_abi=3.7
