@@ -27,7 +27,7 @@ class CMScanOnCandidates:
                 f.write("\n")
 
     def _run_cm_scan(self):
-        cmd = f"tools/infernal/binaries/cmscan -o output_cmscan.txt {self.cov_model_path} input_for_cm_scan.fa"
+        cmd = f"cmscan -o output_cmscan.txt {self.cov_model_path} input_for_cm_scan.fa"
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         a, b = process.communicate()
 

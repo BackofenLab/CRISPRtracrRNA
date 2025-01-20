@@ -38,10 +38,10 @@ class AntiRepeatSearch:
                 f.write(f"{consensus_repeat}\n")
 
     def _run_fasta(self):
-        cmd = f"tools/fasta-36.3.8g/bin/fasta36 {self.path_dna_file} " \
+        cmd = f"fasta36 {self.path_dna_file} " \
               f"all_repeat_candidates.fa  -m 8 > fasta_similarity.fastab"
         os.system(cmd)
-        cmd = f"tools/fasta-36.3.8g/bin/fasta36 all_repeat_candidates.fa {self.path_dna_file} " \
+        cmd = f"fasta36 all_repeat_candidates.fa {self.path_dna_file} " \
               f" -m 8 > fasta_similarity_inverted.fastab"
         os.system(cmd)
 
