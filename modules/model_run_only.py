@@ -53,45 +53,53 @@ class CMScanRunCompleteDNA:
         self.dna = "".join(line.strip() for line in lines[1:])
 
     def _run_cm_scan(self):
-        cmd = f"cmscan -o output_cmscan.txt {self.model_path} {self.dna_path}"
-        os.system(cmd)
+        for model in self.model_path:
+            output_file = f"output_cmscan_{os.path.basename(model)}.txt"
+            cmd = f"cmscan -o {output_file} {model} {self.dna_path}"
+            os.system(cmd)
 
     def _parse_result_file(self):
-        with open("output_cmscan.txt") as f:
-            lines = f.readlines()
+        self.intervals_scores = []  # Reset intervals_scores before processing multiple files
 
-        flag_in = False
-        for line in lines:
-            if "----   --------- ------" in line:
-                flag_in = True
-                continue
-            if "inclusion threshold" in line:
-                flag_in = False
+        for model in self.model_path:
+            output_file = f"output_cmscan_{os.path.basename(model)}.txt"
 
-            if "No hits detected that satisfy reporting thresholds" in line:
-                flag_in = False
+            if not os.path.exists(output_file):
+                continue  # Skip if the file doesn't exist
 
-            if "Hit alignments:" in line:
-                break
+            with open(output_file) as f:
+                lines = f.readlines()
 
-            if flag_in:
-                line_elements = line.split()
-                if line_elements:
+            flag_in = False
+            for line in lines:
+                if "----   --------- ------" in line:
+                    flag_in = True
+                    continue
+                if "inclusion threshold" in line or "No hits detected that satisfy reporting thresholds" in line:
+                    flag_in = False
+
+                if "Hit alignments:" in line:
+                    break
+
+                if flag_in:
                     line_elements = line.split()
-                    start = line_elements[6]
-                    end = line_elements[7]
-                    strand = line_elements[8]
-                    e_val = line_elements[2]
-                    score = line_elements[3]
-                    complete_hit = f"{start}_{end}_{strand}_{e_val}_{score}"
-                    self.intervals_scores.append(complete_hit)
+                    if line_elements:
+                        start = line_elements[6]
+                        end = line_elements[7]
+                        strand = line_elements[8]
+                        e_val = line_elements[2]
+                        score = line_elements[3]
+                        complete_hit = f"{start}_{end}_{strand}_{e_val}_{score}"
+                        self.intervals_scores.append(complete_hit)
 
     def _clean_up(self):
         try:
-            #shutil.move('output_cmscan.txt', join(self.folder_intermediate_files, "output_cmscan.txt"))
-            os.remove("output_cmscan.txt")
-        except Exception:
-            pass
+            for model in self.model_path:
+                output_file = f"output_cmscan_{os.path.basename(model)}.txt"
+                if os.path.exists(output_file):
+                    os.remove(output_file)
+        except Exception as e:
+            print(f"Cleanup error: {e}")
 
     def _compute_overlaps(self):
         def merging_two_intervals(interval_one, interval_two):

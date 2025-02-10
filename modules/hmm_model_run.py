@@ -27,9 +27,14 @@ class CMScanOnCandidates:
                 f.write("\n")
 
     def _run_cm_scan(self):
-        cmd = f"cmscan -o output_cmscan.txt {self.cov_model_path} input_for_cm_scan.fa"
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        a, b = process.communicate()
+        self.output_files = []  # Store the output filenames for multiple models
+
+        for model in self.cov_model_path:
+            output_file = f"output_cmscan_{os.path.basename(model)}.txt"
+            cmd = f"cmscan -o {output_file} {model} input_for_cm_scan.fa"
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            process.communicate()
+            self.output_files.append(output_file)  # Store the output file name
 
     def _parse_result_file(self):
         def _parse_chunk(chunk):
@@ -39,10 +44,7 @@ class CMScanOnCandidates:
                 if "----   --------- ------" in line:
                     flag_in = True
                     continue
-                if "inclusion threshold" in line:
-                    flag_in = False
-
-                if "No hits detected that satisfy reporting thresholds" in line:
+                if "inclusion threshold" in line or "No hits detected that satisfy reporting thresholds":
                     flag_in = False
 
                 if "Hit alignments:" in line:
@@ -51,7 +53,6 @@ class CMScanOnCandidates:
                 if flag_in:
                     line_elements = line.split()
                     if line_elements:
-                        line_elements = line.split()
                         start = line_elements[6]
                         end = line_elements[7]
                         strand = line_elements[8]
@@ -62,36 +63,40 @@ class CMScanOnCandidates:
 
             return list_cmscan_hits
 
-        with open("output_cmscan.txt") as f:
-            lines = f.readlines()
+        self.list_hits_best = []  # Reset hits before processing multiple files
 
-        indexes_headers = [index for index, line in enumerate(lines) if "Query:" in line]
-        chunks = [lines[index_s:index_e] for index_s, index_e in zip(indexes_headers, indexes_headers[1:])]
-        last_chunk = lines[indexes_headers[-1]:]
-        chunks.append(last_chunk)
+        for output_file in self.output_files:  # Loop through all output files
+            if not os.path.exists(output_file):
+                continue  # Skip missing files
 
-        for index, chunk in enumerate(chunks):
-            list_model_hits = _parse_chunk(chunk)
-            if list_model_hits:
-                best_hit = max(list_model_hits, key=lambda x: x.Score)
-            else:
-                best_hit = None
+            with open(output_file) as f:
+                lines = f.readlines()
 
-            self.list_hits_best.append(best_hit)
+            indexes_headers = [index for index, line in enumerate(lines) if "Query:" in line]
+            chunks = [lines[index_s:index_e] for index_s, index_e in zip(indexes_headers, indexes_headers[1:])]
+            last_chunk = lines[indexes_headers[-1]:]
+            chunks.append(last_chunk)
+
+            for index, chunk in enumerate(chunks):
+                list_model_hits = _parse_chunk(chunk)
+                if list_model_hits:
+                    best_hit = max(list_model_hits, key=lambda x: x.Score)
+                else:
+                    best_hit = None
+
+                self.list_hits_best.append(best_hit)  # Store the best hit per sequence
 
     def _clean_up(self):
         try:
-            os.remove("input_for_cm_scan.fa")
-            os.remove("output_cmscan.txt")
-        except Exception:
-            pass
+            os.remove("input_for_cm_scan.fa")  # Remove the input file
+
+            # Remove all cmscan output files
+            for output_file in self.output_files:
+                if os.path.exists(output_file):
+                    os.remove(output_file)
+
+        except Exception as e:
+            print(f"Cleanup error: {e}")  # Print error if cleanup fails
 
     def output(self):
         return self.list_hits_best
-
-
-if __name__ == "__main__":
-    list_seqs = ["AAGGCUUUGUCCGUACACAACUUGAAAAAGUGCGCACCGAUUCGGUGCUUUUUU", "AAGGCUUUGUCCGUACACAACUUGAAAAAGUGCGCACCGAUUCGGUGCUUUUU", "AAGGCAGUGAUUUUUAAUCCAGUCCGUAUUCAGCUUGAAAAAGUGAGCACCGAUUCGGUGCUUUUUU", "ACCCAGAAAATA"]
-    model = "/home/alex/PycharmProjects/CRISPRtracr/tools/cov_matrix/s2_b14/cov_matrix.cm"
-    results = CMScanOnCandidates(list_seqs, model).output()
-    print(results)

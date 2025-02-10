@@ -10,7 +10,15 @@ def main():
     folder_output = args.output_folder
     temp_folder_path = args.temp_folder_path
     output_file_name = args.output_summary_file
-    model = "tools/cov_matrix/s2_b14/cov_matrix.cm" if args.model_type == "II" else "tools/cov_matrix/type_5/cov_matrix.cm"
+    if args.model_type == "II":
+        model = ["tools/cov_matrix/s2_b14/cov_matrix.cm"]
+    else:
+        model = [
+            "tools/cov_matrix/type_5/cluster1.top30.cm",
+            "tools/cov_matrix/type_5/cluster2.top30.cm",
+            "tools/cov_matrix/type_5/cluster3.top30.cm",
+            "tools/cov_matrix/type_5/cluster4.top30.cm"
+        ]
     anti_repeat_similarity = args.anti_repeat_similarity_threshold
     anti_repeat_coverage = args.anti_repeat_coverage_threshold
     dict_weights = {"crispr_array_score": args.weight_crispr_array_score,
