@@ -1,3 +1,5 @@
+import os
+import csv
 from os import listdir
 from os.path import isfile, join
 
@@ -327,35 +329,53 @@ class TracrSearchWihtModelOnly:
         self.path_to_model = path_to_model
         self.flag_perform_anti_repeat_search = flag_perform_anti_repeat_search
 
+        self.hits_folder = join(self.folder_output, "hits")
+        os.makedirs(self.hits_folder, exist_ok=True)
+
         self._run_model_search()
+        self._create_combined_reports()
 
     def _run_model_search(self):
-        folder_maker(self.folder_output, "")
         print("\n\t\tRunning the model search")
         all_files = [f for f in listdir(self.folder_input) if isfile(join(self.folder_input, f))]
         for index, file_name in enumerate(all_files):
-            print(f"\tWorking with file {file_name}  {index+1} out of {len(all_files)}")
+            print(f"\tWorking with file {file_name}  {index + 1} out of {len(all_files)}")
             full_path_to_file = join(self.folder_input, file_name)
-            cm_scan_c_dna = CMScanRunCompleteDNA(full_path_to_file, self.path_to_model,  self.folder_output)
-            cm_scan_c_dna.report_csv_output_file(join(self.folder_output, file_name + "_report.csv"))
+            cm_scan_c_dna = CMScanRunCompleteDNA(full_path_to_file, self.path_to_model, self.hits_folder)
+            cm_scan_c_dna.write_raw_hits_to_csv(join(self.hits_folder, file_name + "_raw_hits.csv"))
+            cm_scan_c_dna.compute_and_write_merged_predictions(join(self.hits_folder, file_name + "_report.csv"))
 
+    def _create_combined_reports(self):
+        hits_files = [f for f in os.listdir(self.hits_folder) if f.endswith("_raw_hits.csv")]
+        reports_files = [f for f in os.listdir(self.hits_folder) if f.endswith("_report.csv")]
 
-        lines_report = []
-        files_in_temp_folder = [f for f in listdir(self.folder_output)
-                                if isfile(join(self.folder_output, f))]
+        complete_hits_file = join(self.folder_output, "complete_hits.csv")
+        complete_report_file = join(self.folder_output, "complete_report.csv")
 
-        for index, file_name in enumerate(files_in_temp_folder):
-            with open(join(self.folder_output, file_name)) as f:
-                if index == 0:
-                    lines_report = f.readlines()
-                else:
-                    lines_report += f.readlines()[1:]
+        if hits_files:
+            with open(complete_hits_file, "w", newline='') as outfile:
+                writer = csv.writer(outfile)
+                header_written = False
+                for file in hits_files:
+                    with open(join(self.hits_folder, file), "r") as infile:
+                        reader = csv.reader(infile)
+                        header = next(reader)
+                        if not header_written:
+                            writer.writerow(header)
+                            header_written = True
+                        writer.writerows(reader)
 
-        with open(self.summary_file_name, "w") as fw:
-            fw.writelines(lines_report)
+        if reports_files:
+            with open(complete_report_file, "w", newline='') as outfile:
+                writer = csv.writer(outfile)
+                header_written = False
+                for file in reports_files:
+                    with open(join(self.hits_folder, file), "r") as infile:
+                        reader = csv.reader(infile)
+                        header = next(reader)
+                        if not header_written:
+                            writer.writerow(header)
+                            header_written = True
+                        writer.writerows(reader)
 
-        if self.flag_perform_anti_repeat_search:
-            print("\n\t\tPerforming anti-repeat search")
-            anti_repeat_search_type_v(self.summary_file_name, ",", self.summary_file_name)
-
-        filter_csv_file_model_run(self.summary_file_name, self.summary_file_name, 0.0001, 30)
+        #filter_csv_file_model_run(self.summary_file_name, self.summary_file_name, 0.0001, 30)

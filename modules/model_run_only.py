@@ -1,7 +1,16 @@
 import os
-from os.path import join
+import subprocess
+from os.path import join, basename
 import shutil
-from os.path import basename
+from modules.consistency_score_maker import get_header_column_index
+
+
+
+from modules.consistency_score_maker import get_header_column_index
+
+import os
+from os.path import join, basename
+
 from modules.consistency_score_maker import get_header_column_index
 
 
@@ -16,57 +25,43 @@ class CMScanRunCompleteDNA:
 
         self.intervals_scores = []
 
-        self.scores_forward = []
-        self.scores_reversed = []
-
         self.merged_intervals_forward = []
         self.merged_intervals_reversed = []
-
-        self.merged_intervals_sequences_forward = []
-        self.merged_intervals_sequences_reversed = []
 
         self._make_intermediate_files_folder()
         self._get_dna()
         self._run_cm_scan()
         self._parse_result_file()
         self._clean_up()
-        self._compute_overlaps()
-        self._get_sequences_for_intervals()
 
     @staticmethod
     def reverse_com(seq):
         dict_complementary = {"A": "T", "G": "C", "T": "A", "C": "G", "N": "N"}
-        new_seq = "".join([dict_complementary.get(x, x) for x in seq])
-        new_seq = new_seq[::-1]
-        return new_seq
+        return "".join([dict_complementary.get(x, x) for x in seq])[::-1]
+
+    @staticmethod
+    def format_e_value(e_value):
+        return f"{e_value:.2e}"  # Convert to scientific notation
 
     def _make_intermediate_files_folder(self):
-        try:
-            os.mkdir(self.folder_intermediate_files)
-        except OSError:
-            pass
+        os.makedirs(self.folder_intermediate_files, exist_ok=True)
 
     def _get_dna(self):
         with open(self.dna_path) as f:
-            lines = f.readlines()
-
-        self.dna = "".join(line.strip() for line in lines[1:])
+            self.dna = "".join(line.strip() for line in f if not line.startswith(">"))
 
     def _run_cm_scan(self):
         for model in self.model_path:
-            output_file = f"output_cmscan_{os.path.basename(model)}.txt"
-            cmd = f"cmscan -o {output_file} {model} {self.dna_path}"
-            os.system(cmd)
+            output_file = f"output_cmscan_{basename(model)}.txt"
+            cmd = ["cmscan", "-o", output_file, model, self.dna_path]
+            subprocess.run(cmd, check=True)
 
     def _parse_result_file(self):
-        self.intervals_scores = []  # Reset intervals_scores before processing multiple files
-
+        self.intervals_scores = []
         for model in self.model_path:
-            output_file = f"output_cmscan_{os.path.basename(model)}.txt"
-
+            output_file = f"output_cmscan_{basename(model)}.txt"
             if not os.path.exists(output_file):
-                continue  # Skip if the file doesn't exist
-
+                continue
             with open(output_file) as f:
                 lines = f.readlines()
 
@@ -75,162 +70,63 @@ class CMScanRunCompleteDNA:
                 if "----   --------- ------" in line:
                     flag_in = True
                     continue
-                if "inclusion threshold" in line or "No hits detected that satisfy reporting thresholds" in line:
+                if "inclusion threshold" in line or "No hits detected" in line:
                     flag_in = False
-
                 if "Hit alignments:" in line:
                     break
-
                 if flag_in:
                     line_elements = line.split()
                     if line_elements:
-                        start = line_elements[6]
-                        end = line_elements[7]
-                        strand = line_elements[8]
-                        e_val = line_elements[2]
-                        score = line_elements[3]
-                        complete_hit = f"{start}_{end}_{strand}_{e_val}_{score}"
-                        self.intervals_scores.append(complete_hit)
+                        start, end = int(line_elements[6]), int(line_elements[7])
+                        strand, e_val = line_elements[8], float(line_elements[2])
+                        if start > end:
+                            start, end = end, start
+                            strand = "-" if strand == "+" else "+"
+                        self.intervals_scores.append((start, end, strand, e_val))
+
+        self.intervals_scores.sort()
 
     def _clean_up(self):
-        try:
-            for model in self.model_path:
-                output_file = f"output_cmscan_{os.path.basename(model)}.txt"
-                if os.path.exists(output_file):
-                    os.remove(output_file)
-        except Exception as e:
-            print(f"Cleanup error: {e}")
+        for model in self.model_path:
+            output_file = f"output_cmscan_{basename(model)}.txt"
+            if os.path.exists(output_file):
+                os.remove(output_file)
 
-    def _compute_overlaps(self):
-        def merging_two_intervals(interval_one, interval_two):
-            start_one, end_one = interval_one
-            start_two, end_two = interval_two
-
-            if (start_two <= end_one <= end_two) or (start_two <= start_one <= end_two):
-                start = min(start_one, start_two)
-                end = max(end_one, end_two)
-                return start, end
-
-        def merging_intervals(intervals, evals):
-            for interval_one in intervals:
-                for interval_two in intervals:
-                    if interval_one != interval_two:
-                        merged_interval = merging_two_intervals(interval_one, interval_two)
-                        if merged_interval:
-                            index_interval1 = intervals.index(interval_one)
-                            intervals.remove(interval_one)
-                            e_val1 = evals[index_interval1]
-                            evals.pop(index_interval1)
-
-                            index_interval2 = intervals.index(interval_two)
-                            intervals.remove(interval_two)
-                            e_val2 = evals[index_interval2]
-                            evals.pop(index_interval2)
-
-                            intervals.append(merged_interval)
-                            evals.append(min(e_val1, e_val2))
-
-                            return False, intervals, evals
-
-            return True, intervals, evals
-
-        def iterative_merging_intervals(intervals, e_vals):
-            flag_merged_all_possible = False
-
-            while not flag_merged_all_possible:
-                flag_merged_all_possible, intervals, e_vals = merging_intervals(intervals, e_vals)
-
-            return intervals, e_vals
-
-        cmscan_e_vals_forward = [float(str_interval.split("_")[3]) for str_interval in self.intervals_scores if
-                                 str_interval.split("_")[2] == "+"]
-        cmscan_intervals_forward = [[int(str_interval.split("_")[0]), int(str_interval.split("_")[1])]
-                                    for str_interval in self.intervals_scores if str_interval.split("_")[2] == "+"]
-
-        cmscan_intervals_forward = [[min(interval), max(interval)] for interval in cmscan_intervals_forward]
-
-        cmscan_intervals_forward_merged, cmscan_evals_forward_merged = iterative_merging_intervals(cmscan_intervals_forward,
-                                                                                                   cmscan_e_vals_forward)
-        self.merged_intervals_forward = cmscan_intervals_forward_merged
-
-        cmscan_e_vals_reversed = [float(str_interval.split("_")[3]) for str_interval in self.intervals_scores if
-                                  str_interval.split("_")[2] == "-"]
-        cmscan_intervals_reversed = [[int(str_interval.split("_")[0]), int(str_interval.split("_")[1])]
-                                     for str_interval in self.intervals_scores if str_interval.split("_")[2] == "-"]
-
-        cmscan_intervals_reversed = [[min(interval), max(interval)] for interval in cmscan_intervals_reversed]
-        cmscan_intervals_reversed_merged, cmscan_evals_reversed_merged = iterative_merging_intervals(cmscan_intervals_reversed,
-                                                                                                     cmscan_e_vals_reversed)
-
-        self.merged_intervals_forward = cmscan_intervals_forward_merged
-        self.merged_intervals_reversed = cmscan_intervals_reversed_merged
-
-        self.merged_intervals_e_vals_forward = cmscan_evals_forward_merged
-        self.merged_intervals_e_vals_reversed = cmscan_evals_reversed_merged
-
-    def _get_sequences_for_intervals(self):
-        for interval in self.merged_intervals_forward:
-            start, end = interval
-            extended_start = max(0, start-30)
-            extended_end = min(end+30, len(self.dna))
-            seq = self.dna[start-1:end-1]
-            extended_seq = self.dna[extended_start:extended_end]
-            self.merged_intervals_sequences_forward.append((interval, seq, extended_seq))
-
-        for interval in self.merged_intervals_reversed:
-            start, end = interval
-            extended_start = max(0, start - 30)
-            extended_end = min(end + 30, len(self.dna))
-            seq = self.dna[start - 1:end - 1]
-            seq = self.reverse_com(seq)
-            extended_seq = self.dna[extended_start:extended_end]
-            extended_seq = self.reverse_com(extended_seq)
-            self.merged_intervals_sequences_reversed.append((interval, seq, extended_seq))
-
-    def output_intervals(self):
-        return self.intervals_scores
-
-    def output_merged_intervals(self):
-        return self.merged_intervals_forward, self.merged_intervals_reversed
-
-    def output_merged_intervals_sequences(self):
-        return self.merged_intervals_sequences_forward, self.merged_intervals_sequences_reversed
-
-    def report_cm_scan_results(self):
-        file_path = join(self.folder_intermediate_files, "cmscan_report.txt")
-        with open(file_path, "w") as f:
-            for interval_seq in self.merged_intervals_sequences_forward:
-                interval, seq, extended_seq = interval_seq
-                start, end = interval
-                header = f">{start}_{end}_forward\n"
-                f.write(header)
-                f.write(seq)
-                f.write("\n")
-
-            for interval_seq in self.merged_intervals_sequences_reversed:
-                interval, seq, extended_seq = interval_seq
-                start, end = interval
-                header = f">{start}_{end}_reversed\n"
-                f.write(header)
-                f.write(seq)
-                f.write("\n")
-
-    def report_csv_output_file(self, csv_file_name):
+    def write_raw_hits_to_csv(self, csv_file_name):
         with open(csv_file_name, "w") as f:
-            header = ",".join(["acc_num", "start", "end", "hit_sequence", "e_value", "extended_sequence"]) + "\n"
-            f.write(header)
+            f.write("acc_num,start,end,e_value,hit_sequence\n")
+            for start, end, strand, e_value in self.intervals_scores:
+                seq = self.dna[start - 1:end] if strand == "+" else self.reverse_com(self.dna[start - 1:end])
+                f.write(f"{self.acc_num},{start},{end},{self.format_e_value(e_value)},{seq}\n")
 
-            for interval_seq, e_value in zip(self.merged_intervals_sequences_forward, self.merged_intervals_e_vals_forward):
-                interval, seq, extended_seq = interval_seq
-                start, end = interval
-                line = ",".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
-                f.write(line)
+    def compute_and_write_merged_predictions(self, csv_file_name):
+        def merge_intervals(intervals):
+            intervals.sort()
+            merged = []
+            for interval in intervals:
+                start, end, strand, e_val = interval
+                if merged and start - merged[-1][1] <= 150 and strand == merged[-1][2]:
+                    prev_start, prev_end, prev_strand, prev_eval = merged.pop()
+                    merged.append((min(prev_start, start), max(prev_end, end), prev_strand, min(prev_eval, e_val)))
+                else:
+                    merged.append(interval)
+            return merged
 
-            for interval_seq, e_value in zip(self.merged_intervals_sequences_reversed, self.merged_intervals_e_vals_reversed):
-                interval, seq, extended_seq = interval_seq
-                start, end = interval
-                line = ",".join([str(x) for x in [self.acc_num, start, end, seq, e_value, extended_seq]]) + '\n'
-                f.write(line)
+        forward_intervals = [(s, e, strand, e_val) for s, e, strand, e_val in self.intervals_scores if strand == "+"]
+        reverse_intervals = [(s, e, strand, e_val) for s, e, strand, e_val in self.intervals_scores if strand == "-"]
+
+        self.merged_intervals_forward = merge_intervals(forward_intervals)
+        self.merged_intervals_reversed = merge_intervals(reverse_intervals)
+
+        with open(csv_file_name, "w") as f:
+            f.write("acc_num,start,end,best_e_value,hit_sequence\n")
+            for start, end, strand, best_e_value in self.merged_intervals_forward:
+                seq = self.dna[start - 1:end]
+                f.write(f"{self.acc_num},{start},{end},{self.format_e_value(best_e_value)},{seq}\n")
+            for start, end, strand, best_e_value in self.merged_intervals_reversed:
+                seq = self.reverse_com(self.dna[start - 1:end])
+                f.write(f"{self.acc_num},{start},{end},{self.format_e_value(best_e_value)},{seq}\n")
+
 
 
 def filter_csv_file_model_run(csv_file_name, output_file_name, e_value_threshold, hit_length_threshold):
